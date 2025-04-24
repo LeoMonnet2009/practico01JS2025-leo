@@ -2,16 +2,10 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-let gameSpeed = 5;          // Velocidad inicial del juego
-let gravity = 0.5;          // Fuerza de gravedad
+let gameSpeed = 5;           // Velocidad constante (los cambios se harán en la modificación)
+let gravity = 0.5;           // Fuerza de gravedad
 let gameOver = false;
 let score = 0;
-let highScore = 0;          // Nueva variable para la puntuación más alta
-let scoreInterval = 100;     // Intervalo para aumentar la velocidad
-let lastSpeedIncreaseScore = 0; // Última puntuación en la que se aumentó la velocidad
-let dinoColor = "green";    // Color inicial del dinosaurio
-let jumpSound = new Audio("jump.wav"); // Asegúrate de tener este archivo de sonido
-let scoreSound = new Audio("score.wav"); // Asegúrate de tener este archivo de sonido
 
 // Objeto dinosaurio
 let dino = {
@@ -48,15 +42,8 @@ function gameLoop() {
 
 // Actualiza posiciones y controla la lógica del juego
 function update() {
-    score++; // Suma puntos continuamente (1 punto por frame)
-
-    // Cambia el color del dinosaurio al saltar
-    if (dino.isJumping) {
-        dinoColor = "lightblue";
-    } else {
-        dinoColor = "green"; // Restablece el color cuando no está saltando
-    }
-
+    score++;  // Suma puntos continuamente (1 punto por frame)
+    
     // Física del salto del dinosaurio
     if (dino.isJumping) {
         dino.vy += gravity;
@@ -68,32 +55,18 @@ function update() {
             dino.vy = 0;
         }
     }
-
-    // Aumenta gradualmente la velocidad del juego cada 100 puntos
-    if (score > 0 && score % scoreInterval === 0 && score > lastSpeedIncreaseScore) {
-        gameSpeed += 0.5; // Aumenta la velocidad (puedes ajustar este valor)
-        lastSpeedIncreaseScore = score;
-        // Efecto de sonido al obtener una puntuación múltiplo de 100
-        if (scoreSound) {
-            scoreSound.play();
-        }
-    }
-
+    
     // Mueve el obstáculo de derecha a izquierda
     obstacle.x -= gameSpeed;
     // Cuando el obstáculo sale por la izquierda, se reubica a la derecha con un espacio aleatorio
     if (obstacle.x + obstacle.width < 0) {
         obstacle.x = canvas.width + Math.random() * 200;
     }
-
+    
     // Detección simple de colisiones (rectángulos)
     if (collision(dino, obstacle)) {
         gameOver = true;
         document.getElementById("restartBtn").style.display = "block";
-        // Actualiza la puntuación más alta si la puntuación actual es mayor
-        if (score > highScore) {
-            highScore = score;
-        }
     }
 }
 
@@ -107,26 +80,23 @@ function collision(rect1, rect2) {
     );
 }
 
-// Dibuja el juego: fondo, puntajes, dinosaurio y obstáculo
+// Dibuja el juego: fondo, puntaje, dinosaurio y obstáculo
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Dibuja el puntaje actual
+    
+    // Dibuja el puntaje
     ctx.fillStyle = "#000";
     ctx.font = "20px Arial";
     ctx.fillText("Score: " + score, 10, 25);
-
-    // Dibuja la puntuación más alta
-    ctx.fillText("High Score: " + highScore, 10, 50);
-
-    // Dibuja el dinosaurio (si la imagen está cargada, se usa; si no, se dibuja un rectángulo con el color actual)
+    
+    // Dibuja el dinosaurio (si la imagen está cargada, se usa; si no, se dibuja un rectángulo verde)
     if (dinoImg.complete) {
         ctx.drawImage(dinoImg, dino.x, dino.y, dino.width, dino.height);
     } else {
-        ctx.fillStyle = dinoColor;
+        ctx.fillStyle = "green";
         ctx.fillRect(dino.x, dino.y, dino.width, dino.height);
     }
-
+    
     // Dibuja el obstáculo (si la imagen está cargada, se usa; si no, se dibuja un rectángulo marrón)
     if (cactusImg.complete) {
         ctx.drawImage(cactusImg, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
@@ -141,10 +111,7 @@ document.addEventListener("keydown", function(e) {
     if (e.code === "Space" && !dino.isJumping && !gameOver) {
         dino.isJumping = true;
         dino.vy = -10;  // Velocidad inicial de salto
-        // Efecto de sonido al saltar
-        if (jumpSound) {
-            jumpSound.play();
-        }
+        // Aquí se podrá agregar el efecto de sonido del salto en la modificación
         e.preventDefault(); // Evita el scroll de la página
     }
 });
@@ -153,8 +120,6 @@ document.addEventListener("keydown", function(e) {
 document.getElementById("restartBtn").addEventListener("click", function() {
     gameOver = false;
     score = 0;
-    gameSpeed = 5;          // Restablece la velocidad
-    lastSpeedIncreaseScore = 0; // Restablece el contador de aumento de velocidad
     dino.y = canvas.height - dino.height;
     dino.isJumping = false;
     dino.vy = 0;
@@ -165,7 +130,5 @@ document.getElementById("restartBtn").addEventListener("click", function() {
 
 // Inicia el juego cuando la ventana carga
 window.onload = function() {
-    // Asegúrate de que el botón de reinicio esté oculto al inicio
-    document.getElementById("restartBtn").style.display = "none";
     gameLoop();
 };
